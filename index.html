@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>注意力训练中心</title>
+<style>
+:root{--pri:#6366f1;--priL:#818cf8;--ok:#22c55e;--err:#ef4444;--warn:#f59e0b;--bg:#0f172a;--card:#1e293b;--hv:#334155;--tx:#f1f5f9;--tm:#94a3b8;--bd:#334155;--r:16px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+body::before{content:"";position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 20% 50%,rgba(99,102,241,.12) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(139,92,246,.08) 0%,transparent 50%);animation:bf 20s ease-in-out infinite;z-index:-1}
+@keyframes bf{0%,100%{transform:translate(0,0)}50%{transform:translate(2%,-2%)}}
+.hdr{text-align:center;padding:36px 20px 14px}
+.hdr h1{font-size:2.3rem;font-weight:700;background:linear-gradient(135deg,#818cf8,#c084fc,#818cf8);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gs 3s ease infinite}
+@keyframes gs{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hdr p{color:var(--tm);font-size:.92rem;margin-top:4px}
+.sb{display:flex;justify-content:center;gap:14px;padding:14px 20px;flex-wrap:wrap}
+.si{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 20px;text-align:center;min-width:110px;transition:transform .2s}
+.si:hover{transform:translateY(-2px)}
+.sv{font-size:1.5rem;font-weight:700;color:var(--priL)}
+.sl{font-size:.78rem;color:var(--tm);margin-top:2px}
+.tabs{display:flex;justify-content:center;gap:8px;padding:6px 20px 14px;flex-wrap:wrap}
+.tbtn{background:var(--card);border:1px solid var(--bd);color:var(--tm);padding:9px 22px;border-radius:50px;font-size:.92rem;font-weight:500;cursor:pointer;transition:all .3s}
+.tbtn:hover{background:var(--hv);color:var(--tx);border-color:var(--pri)}
+.tbtn.on{background:var(--pri);color:#fff;border-color:var(--pri);box-shadow:0 4px 16px rgba(99,102,241,.4)}
+.main{max-width:800px;margin:0 auto;padding:0 20px 40px}
+.pnl{display:none;animation:fi .3s ease}
+.pnl.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.cd{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:22px;margin-bottom:14px}
+.cd h3{font-size:1.1rem;margin-bottom:12px}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bd)}
+.sr:last-child{border-bottom:none}
+.slb{color:var(--tm);font-size:.88rem}
+.sc select{background:var(--bg);border:1px solid var(--bd);color:var(--tx);padding:6px 10px;border-radius:8px;font-size:.88rem;outline:none}
+.sc select:focus{border-color:var(--pri)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 26px;border:none;border-radius:12px;font-size:.92rem;font-weight:600;cursor:pointer;transition:all .2s;color:#fff}
+.btn:active{transform:scale(.97)}
+.bp{background:linear-gradient(135deg,var(--pri),#4f46e5);box-shadow:0 4px 16px rgba(99,102,241,.3)}
+.bp:hover{box-shadow:0 6px 24px rgba(99,102,241,.5);transform:translateY(-1px)}
+.bo{background:transparent;border:1px solid var(--bd);color:var(--tm)}
+.bo:hover{border-color:var(--pri);color:var(--priL)}
+.bf{width:100%}
+.bg{display:flex;gap:10px;margin-top:14px}
+.bg .btn{flex:1}
+.td{text-align:center;padding:14px}
+.tt{font-size:2.8rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--priL);text-shadow:0 0 30px rgba(99,102,241,.3)}
+.ts{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.76rem;font-weight:600;margin-top:4px}
+.ts.r{background:rgba(34,197,94,.15);color:var(--ok)}
+.sa{min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ss{font-size:5rem;font-weight:800;letter-spacing:4px;margin:14px 0;text-shadow:0 4px 20px rgba(0,0,0,.3);user-select:none;transition:all .15s}
+.sh{color:var(--tm);font-size:.92rem;margin-bottom:5px}
+.sp{display:flex;gap:5px;margin:10px 0;flex-wrap:wrap;justify-content:center}
+.sd{width:8px;height:8px;border-radius:50%;background:var(--bd);transition:background .2s}
+.sd.c{background:var(--ok)}.sd.w{background:var(--err)}.sd.n{background:var(--pri);box-shadow:0 0 8px var(--pri);transform:scale(1.3)}
+.sbs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;width:100%;max-width:380px}
+.sb2{padding:14px;border:2px solid var(--bd);border-radius:12px;background:var(--bg);color:var(--tx);font-size:1.3rem;font-weight:700;cursor:pointer;transition:all .15s}
+.sb2:hover{border-color:var(--pri);background:rgba(99,102,241,.1);transform:scale(1.05)}
+.sb2.cf{border-color:var(--ok);background:rgba(34,197,94,.2)}
+.sb2.wf{border-color:var(--err);background:rgba(239,68,68,.2)}
+.sg{display:grid;gap:6px;margin:14px auto;max-width:500px}
+.sc2{display:flex;align-items:center;justify-content:center;background:var(--bg);border:2px solid var(--bd);border-radius:12px;font-size:1.5rem;font-weight:700;cursor:pointer;transition:all .15s;user-select:none;aspect-ratio:1}
+.sc2:hover{border-color:var(--pri);background:rgba(99,102,241,.05)}
+.sc2.fd{border-color:var(--ok);background:rgba(34,197,94,.12);color:var(--ok);cursor:default;transform:scale(.92);opacity:.6}
+.sc2.wf2{border-color:var(--err);background:rgba(239,68,68,.15);animation:sk .4s ease}
+.sc2.hc{border-color:var(--warn);box-shadow:0 0 16px rgba(245,158,11,.3)}
+@keyframes sk{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.stgt{text-align:center;padding:12px;background:var(--bg);border-radius:12px;border:2px solid var(--bd);margin-bottom:10px}
+.stgl{color:var(--tm);font-size:.82rem}
+.stgn{font-size:2.6rem;font-weight:800;color:var(--priL)}
+.stgh{color:var(--tm);font-size:.78rem;margin-top:2px}
+.szsel{display:flex;gap:6px;flex-wrap:wrap}
+.szbtn{padding:6px 16px;border:2px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tm);font-weight:600;cursor:pointer;transition:all .2s}
+.szbtn:hover{border-color:var(--pri)}
+.szbtn.on{border-color:var(--pri);background:rgba(99,102,241,.15);color:var(--priL)}
+.mo{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center}
+.mo.sh{display:flex;animation:fi .3s ease}
+.md{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:30px;max-width:390px;width:90%;text-align:center}
+.md h2{font-size:1.4rem;margin-bottom:5px}
+.md .re{font-size:3.2rem;margin:10px 0}
+.md .rs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.md .ri{background:var(--bg);border-radius:12px;padding:10px}
+.md .ri .v{font-size:1.3rem;font-weight:700;color:var(--priL)}
+.md .ri .l{font-size:.76rem;color:var(--tm);margin-top:2px}
+.md .st{font-size:1.7rem;margin:8px 0;letter-spacing:4px}
+.hl{max-height:280px;overflow-y:auto}
+.hi{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid var(--bd);transition:background .2s}
+.hi:hover{background:var(--hv)}.hi:last-child{border-bottom:none}
+.tb{padding:2px 8px;border-radius:6px;font-size:.7rem;font-weight:600}
+.tb.stb{background:rgba(99,102,241,.15);color:var(--priL)}
+.tb.schb{background:rgba(34,197,94,.15);color:var(--ok)}
+.hinfo{font-size:.78rem;color:var(--tm)}
+.hsv{font-weight:700;color:var(--priL)}.hst{font-size:.76rem;color:var(--tm)}
+.eh{text-align:center;color:var(--tm);padding:32px}
+.eh .ei{font-size:2.2rem;margin-bottom:8px;opacity:.5}
+.cdo{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,.9);display:none;align-items:center;justify-content:center;z-index:999}
+.cdo.sh{display:flex}
+.cdn{font-size:6rem;font-weight:800;color:var(--priL);animation:cp .6s ease}
+@keyframes cp{0%{transform:scale(2);opacity:0}50%{transform:scale(.9);opacity:1}100%{transform:scale(1);opacity:1}}
+.kh{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.khi{display:flex;align-items:center;gap:4px;font-size:.76rem;color:var(--tm)}
+kbd{background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:1px 6px;font-family:inherit;font-size:.76rem}
+@media(max-width:600px){.hdr h1{font-size:1.6rem}.ss{font-size:3.2rem}.sbs{grid-template-columns:repeat(3,1fr)}.sc2{font-size:1.1rem}.bg{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="hdr"><h1>🧠 注意力训练中心</h1><p>Stroop 干扰训练 · 舒尔特方格 · 专注力提升</p></div>
+<div class="sb">
+<div class="si"><div class="sv" id="xSess">0</div><div class="sl">训练次数</div></div>
+<div class="si"><div class="sv" id="xTime">0:00</div><div class="sl">累计时长</div></div>
+<div class="si"><div class="sv" id="xAcc">-</div><div class="sl">平均正确率</div></div>
+<div class="si"><div class="sv" id="xStr">0</div><div class="sl">连续天数</div></div>
+</div>
+<div class="tabs">
+<button class="tbtn on" data-t="stroop" onclick="swTab('stroop')">🎨 Stroop 干扰</button>
+<button class="tbtn" data-t="schulte" onclick="swTab('schulte')">📊 舒尔特方格</button>
+<button class="tbtn" data-t="hist" onclick="swTab('hist')">📈 训练记录</button>
+</div>
+<div class="main">
+<div class="pnl on" id="p-stroop">
+<div class="cd" id="stroop-set">
+<h3>⚙️ 训练设置</h3>
+<div class="sr"><span class="slb">干扰模式</span><div class="sc"><select id="sMode"><option value="number">数值干扰 (数字颜色不一致)</option><option value="word">文字干扰 (文字颜色不一致)</option><option value="mixed">混合模式</option></select></div></div>
+<div class="sr"><span class="slb">题目数量</span><div class="sc"><select id="sCnt"><option value="10">10 题</option><option value="20" selected>20 题</option><option value="30">30 题</option><option value="50">50 题</option></select></div></div>
+<div class="sr"><span class="slb">限时作答</span><div class="sc"><select id="sTmo"><option value="0">不限时</option><option value="3000">3 秒</option><option value="2000">2 秒</option><option value="1500">1.5 秒</option></select></div></div>
+<div class="bg"><button class="btn bp bf" onclick="goStroop()">🚀 开始训练</button></div>
+</div>
+<div class="cd" id="stroop-game" style="display:none">
+<div class="td"><div class="tt" id="st-timer">00:00.0</div><div class="ts r" id="st-ts">计时中</div></div>
+<div class="sa">
+<div class="sh" id="st-hint"></div>
+<div class="ss" id="st-stim"></div>
+<div class="sp" id="st-prog"></div>
+</div>
+<div class="sbs" id="st-btns"></div>
+<div class="kh"><span class="khi"><kbd>1</kbd>~<kbd>9</kbd> 快速作答</span><span class="khi"><kbd>Esc</kbd> 结束</span></div>
+</div>
+</div>
+<div class="pnl" id="p-schulte">
+<div class="cd" id="sch-set">
+<h3>⚙️ 训练设置</h3>
+<div class="sr"><span class="slb">网格大小</span><div class="szsel">
+<button class="szbtn" data-s="3" onclick="selSz(3)">3×3</button>
+<button class="szbtn on" data-s="5" onclick="selSz(5)">5×5</button>
+<button class="szbtn" data-s="7" onclick="selSz(7)">7×7</button>
+<button class="szbtn" data-s="9" onclick="selSz(9)">9×9</button>
+</div></div>
+<div class="sr"><span class="slb">内容类型</span><div class="sc"><select id="schType"><option value="number" selected>数字 (1~N)</option><option value="letter">字母 (A~Z)</option><option value="chinese">中文数字</option><option value="color">颜色文字</option></select></div></div>
+<div class="sr"><span class="slb">排列顺序</span><div class="sc"><select id="schRev"><option value="0" selected>正序 (从小到大)</option><option value="1">倒序 (从大到小)</option></select></div></div>
+<div class="sr"><span class="slb">提示功能</span><div class="sc"><select id="schHint"><option value="0" selected>关闭</option><option value="1">开启 (按 H 键提示)</option></select></div></div>
+<div class="bg"><button class="btn bp bf" onclick="goSchulte()">🚀 开始训练</button></div>
+</div>
+<div class="cd" id="sch-game" style="display:none">
+<div class="td"><div class="tt" id="sch-timer">00:00.0</div><div class="ts r" id="sch-ts">计时中</div></div>
+<div class="stgt">
+<div class="stgl">请找到并点击</div>
+<div class="stgn" id="sch-tgt">1</div>
+<div class="stgh" id="sch-nh"></div>
+</div>
+<div class="sg" id="sch-grid"></div>
+<div class="kh"><span class="khi"><kbd>H</kbd> 提示</span><span class="khi"><kbd>Esc</kbd> 结束</span></div>
+</div>
+</div>
+<div class="pnl" id="p-hist">
+<div class="cd"><h3>📋 训练历史</h3><div class="hl" id="hist-list"></div></div>
+<div class="bg"><button class="btn bo bf" onclick="clrHist()">🗑️ 清除所有记录</button></div>
+</div>
+</div>
+<div class="mo" id="modal">
+<div class="md">
+<div class="re" id="m-emoji">🎉</div>
+<h2 id="m-title">训练完成！</h2>
+<div class="st" id="m-stars"></div>
+<div class="rs" id="m-stats"></div>
+<div class="bg"><button class="btn bo" onclick="closeM()">返回</button><button class="btn bp" onclick="replay()">再来一次</button></div>
+</div>
+</div>
+<div class="cdo" id="cdown"><div class="cdn" id="cdn-n">3</div></div>
+<script>
+const COLORS=[
+{name:"红",hex:"#ef4444",v:1},{name:"橙",hex:"#f97316",v:2},{name:"黄",hex:"#eab308",v:3},
+{name:"绿",hex:"#22c55e",v:4},{name:"蓝",hex:"#3b82f6",v:5},{name:"紫",hex:"#a855f7",v:6},
+{name:"粉",hex:"#ec4899",v:7},{name:"白",hex:"#e2e8f0",v:8},{name:"灰",hex:"#94a3b8",v:9}
+];
+const NUMS=["1","2","3","4","5","6","7","8","9"];
+const LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const CN=["零","一","二","三","四","五","六","七","八","九","十",
+"十一","十二","十三","十四","十五","十六","十七","十八","十九","二十",
+"二十一","二十二","二十三","二十四","二十五","二十六","二十七","二十八","二十九","三十",
+"三十一","三十二","三十三","三十四","三十五","三十六","三十七","三十八","三十九","四十",
+"四十一","四十二","四十三","四十四","四十五","四十六","四十七","四十八","四十九","五十",
+"五十一","五十二","五十三","五十四","五十五","五十六","五十七","五十八","五十九","六十",
+"六十一","六十二","六十三","六十四","六十五","六十六","六十七","六十八","六十九","七十",
+"七十一","七十二","七十三","七十四","七十五","七十六","七十七","七十八","七十九","八十","八十一"];
+const CW=["红","橙","黄","绿","蓝","紫","粉","棕","灰","白","黑","金","银","青","玫红","深蓝","浅绿","暗红","天蓝","鹅黄","米白","藏青","栗色","驼色","靛蓝","钴蓝","墨绿","草绿","玫紫","浅粉","深灰","浅灰","米黄","杏色","酒红","橄榄","芥末","水蓝","琥珀","珊瑚","薰衣","薄荷","丁香","焦糖","奶白","雾蓝","岩灰","竹青","枫红","雪白","炭灰","肉粉","竹绿","石板","灰蓝","暗紫"];
+let hist=JSON.parse(localStorage.getItem("at_h")||"[]");
+let nSess=+localStorage.getItem("at_s")||0;
+let tTime=+localStorage.getItem("at_t")||0;
+let streak=+localStorage.getItem("at_k")||0;
+let lDate=localStorage.getItem("at_d")||"";
+let curTab="stroop",curReplay=null;
+let SR=false,sMode,sCnt,sTmo,sCur,sOk,sWr,sRes,sT0,sTI,sAns,sTmo2;
+let SCH=false,szSz=5,szType,szRev,szHint,szTot,szFound,szWr,szOrd,szGrid,szT0,szTI;
+function shuf(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function fmt(ms){const s=ms/1000;return s>=60?Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0")+"."+Math.floor(ms%1000/100):Math.floor(s)+"."+Math.floor(ms%1000/100)+"s";}
+function getEl(id){return document.getElementById(id);}
+function swTab(t){curTab=t;document.querySelectorAll(".tbtn").forEach(b=>b.classList.toggle("on",b.dataset.t===t));document.querySelectorAll(".pnl").forEach(p=>p.classList.toggle("on",p.id==="p-"+t));}
+function updStats(){
+document.getElementById("xSess").textContent=nSess;
+const s=Math.floor(tTime/1000);
+document.getElementById("xTime").textContent=s>=60?Math.floor(s/60)+":"+String(s%60).padStart(2,"0"):s+"s";
+if(hist.length){const avg=Math.round(hist.reduce((a,r)=>a+(r.acc||r.eff||0),0)/hist.length);document.getElementById("xAcc").textContent=avg+"%";}else{document.getElementById("xAcc").textContent="-";}
+document.getElementById("xStr").textContent=streak;
+}
+function updStreak(){const t=new Date().toDateString();if(lDate!==t){const y=new Date(Date.now()-864e5).toDateString();streak=lDate===y?streak+1:1;lDate=t;localStorage.setItem("at_k",streak);localStorage.setItem("at_d",lDate);}}
+function chkStreak(){const t=new Date().toDateString(),y=new Date(Date.now()-864e5).toDateString();if(lDate!==t&&lDate!==y){streak=0;localStorage.setItem("at_k","0");}}
+updStats();chkStreak();renderHist();
+function startT(tid,sid){const t0=performance.now(),te=document.getElementById(tid),se=document.getElementById(sid);se.textContent="计时中";se.className="ts r";return setInterval(()=>{const d=performance.now()-t0;const m=Math.floor(d/6e4),s=Math.floor(d%6e4/1e3),ms=Math.floor(d%1e3/100);te.textContent=(m?String(m).padStart(2,"0")+":":"")+String(s).padStart(2,"0")+"."+ms;},50);}
+function countdown(cb){const o=document.getElementById("cdown"),n=document.getElementById("cdn-n");o.classList.add("sh");let c=3;n.textContent=c;n.style.animation="none";void n.offsetWidth;n.style.animation="";const iv=setInterval(()=>{c--;if(c>0){n.textContent=c;n.style.animation="none";void n.offsetWidth;n.style.animation="";}else{clearInterval(iv);o.classList.remove("sh");cb();}},700);}
+function genTrial(mode){
+const m=mode==="mixed"?(Math.random()<.5?"number":"word"):mode;
+const ni=Math.floor(Math.random()*9);let ci;do{ci=Math.floor(Math.random()*9);}while(ci===ni);
+if(m==="number"){return{disp:NUMS[ni],col:COLORS[ci],ans:COLORS[ci].v,instr:"请判断数字的 <b style='color:#818cf8'>显示颜色</b>（忽略数字本身）"};}
+else{return{disp:COLORS[ni].name,col:COLORS[ci],ans:COLORS[ci].v,instr:"请判断文字的 <b style='color:#818cf8'>显示颜色</b>（忽略文字含义）"};}
+}
+function goStroop(){
+sMode=document.getElementById("sMode").value;sCnt=+document.getElementById("sCnt").value;sTmo=+document.getElementById("sTmo").value;
+sCur=0;sOk=0;sWr=0;sRes=[];
+document.getElementById("stroop-set").style.display="none";document.getElementById("stroop-game").style.display="block";
+curReplay=goStroop;
+countdown(()=>{SR=true;sTI=startT("st-timer","st-ts");sT0=performance.now();renderSt();});
+}
+function renderSt(){
+if(sCur>=sCnt){finishSt();return;}
+const t=genTrial(sMode);sAns=t.ans;
+document.getElementById("st-hint").innerHTML=t.instr;
+const el=document.getElementById("st-stim");el.textContent=t.disp;el.style.color=t.col.hex;
+el.style.transform="scale(0.5)";el.style.opacity="0";
+requestAnimationFrame(()=>{el.style.transition="all .15s";el.style.transform="scale(1)";el.style.opacity="1";});
+const pe=document.getElementById("st-prog");pe.innerHTML="";
+for(let i=0;i<sCnt;i++){const d=document.createElement("div");d.className="sd";if(i<sRes.length)d.classList.add(sRes[i]?"c":"w");if(i===sCur)d.classList.add("n");pe.appendChild(d);}
+const bc=document.getElementById("st-btns");bc.innerHTML="";
+shuf(COLORS.slice(0,9)).forEach(c=>{
+const b=document.createElement("button");b.className="sb2";b.textContent=c.v;b.style.borderColor=c.hex+"40";b.style.color=c.hex;
+b.onclick=()=>{if(SR)stClick(c.v,b);};bc.appendChild(b);
+});
+if(sTmo>0){clearTimeout(sTmo2);sTmo2=setTimeout(()=>stClick(null),sTmo);}
+}
+function stClick(v,btn){
+clearTimeout(sTmo2);if(!SR)return;
+const ok=v===sAns;if(ok)sOk++;else sWr++;sRes.push(ok);
+if(btn){btn.classList.add(ok?"cf":"wf");setTimeout(()=>btn.classList.remove("cf","wf"),300);}
+sCur++;setTimeout(renderSt,ok?180:450);
+}
+function finishSt(){
+SR=false;clearInterval(sTI);
+const el=performance.now()-sT0,acc=Math.round(sOk/sCnt*100),avg=Math.round(el/sCnt);
+saveR({type:"stroop",mode:sMode,date:new Date().toISOString(),total:sCnt,correct:sOk,wrong:sWr,acc:acc,tt:fmt(el),avg:avg+"ms",raw:el});
+const stars=acc>=95?"⭐⭐⭐":acc>=80?"⭐⭐":"⭐";
+const emoji=acc>=95?"🏆":acc>=80?"🎉":acc>=60?"💪":"🤔";
+const title=acc>=95?"完美表现！":acc>=80?"训练完成！":acc>=60?"继续加油！":"需要多练习";
+document.getElementById("m-emoji").textContent=emoji;
+document.getElementById("m-title").textContent=title;
+document.getElementById("m-stars").textContent=stars;
+document.getElementById("m-stats").innerHTML="<div class='ri'><div class='v'>"+acc+"%</div><div class='l'>正确率</div></div><div class='ri'><div class='v'>"+sOk+"/"+sCnt+"</div><div class='l'>正确数</div></div><div class='ri'><div class='v'>"+avg+"ms</div><div class='l'>平均反应</div></div><div class='ri'><div class='v'>"+fmt(el)+"</div><div class='l'>总用时</div></div>";
+document.getElementById("modal").classList.add("sh");
+document.getElementById("stroop-set").style.display="block";document.getElementById("stroop-game").style.display="none";
+}
+function selSz(n){szSz=n;document.querySelectorAll(".szbtn").forEach(b=>b.classList.toggle("on",+b.dataset.s===n));}
+function genContent(sz,type){
+const tot=sz*sz;let items=[];
+if(type==="number"){for(let i=1;i<=tot;i++)items.push(String(i));}
+else if(type==="letter"){for(let i=0;i<Math.min(tot,26);i++)items.push(LETTERS[i]);}
+else if(type==="chinese"){for(let i=1;i<=tot;i++)items.push(CN[i]||String(i));}
+else if(type==="color"){for(let i=0;i<tot;i++)items.push(CW[i%CW.length]);}
+return items;
+}
+function goSchulte(){
+szType=document.getElementById("schType").value;szRev=document.getElementById("schRev").value==="1";szHint=document.getElementById("schHint").value==="1";
+szTot=szSz*szSz;szFound=0;szWr=0;
+const content=genContent(szSz,szType);
+szGrid=shuf(content);szOrd=szRev?[...content].reverse():content;
+document.getElementById("sch-set").style.display="none";document.getElementById("sch-game").style.display="block";
+curReplay=goSchulte;
+countdown(()=>{SCH=true;szTI=startT("sch-timer","sch-ts");szT0=performance.now();renderGrid();updTgt();});
+}
+function renderGrid(){
+const g=document.getElementById("sch-grid");g.innerHTML="";g.style.gridTemplateColumns="repeat("+szSz+",1fr)";
+szGrid.forEach((item,i)=>{
+const c=document.createElement("div");c.className="sc2";c.textContent=item;c.dataset.c=item;
+const fi=szOrd.indexOf(item);if(fi>=0&&fi<szFound)c.classList.add("fd");
+c.onclick=()=>schClick(c);g.appendChild(c);
+});
+}
+function updTgt(){
+document.getElementById("sch-tgt").textContent=szOrd[szFound];
+document.getElementById("sch-nh").textContent=szFound+1<szTot?"下一个: "+szOrd[szFound+1]:"最后一个！";
+}
+function schClick(cell){
+if(!SCH||cell.classList.contains("fd"))return;
+const c=cell.dataset.c,e=szOrd[szFound];
+if(c===e){cell.classList.add("fd");szFound++;if(szFound>=szTot)finishSch();else updTgt();}
+else{szWr++;cell.classList.add("wf2");setTimeout(()=>cell.classList.remove("wf2"),400);}
+}
+function showHint(){
+if(!SCH||!szHint)return;
+const e=szOrd[szFound];
+document.querySelectorAll(".sc2").forEach(c=>{if(c.dataset.c===e&&!c.classList.contains("fd")){c.classList.add("hc");setTimeout(()=>c.classList.remove("hc"),1500);}});
+}
+function finishSch(){
+SCH=false;clearInterval(szTI);
+const el=performance.now()-szT0,eff=Math.round((szTot-szWr)/szTot*100);
+const base=szSz===3?8:szSz===5?25:szSz===7?60:120;const ratio=el/1000/base;
+saveR({type:"schulte",size:szSz+"x"+szSz,ctype:szType,rev:szRev,date:new Date().toISOString(),total:szTot,wrong:szWr,eff:eff,tt:fmt(el),raw:el});
+const stars=ratio<=1&&eff>=95?"⭐⭐⭐":ratio<=1.5&&eff>=85?"⭐⭐":"⭐";
+const emoji=ratio<=1&&eff>=95?"🏆":ratio<=1.5&&eff>=85?"🎉":"💪";
+const title=ratio<=1&&eff>=95?"超凡表现！":ratio<=1.5&&eff>=85?"训练完成！":"继续加油！";
+document.getElementById("m-emoji").textContent=emoji;
+document.getElementById("m-title").textContent=title;
+document.getElementById("m-stars").textContent=stars;
+document.getElementById("m-stats").innerHTML="<div class='ri'><div class='v'>"+fmt(el)+"</div><div class='l'>总用时</div></div><div class='ri'><div class='v'>"+szSz+"x"+szSz+"</div><div class='l'>网格</div></div><div class='ri'><div class='v'>"+eff+"%</div><div class='l'>准确率</div></div><div class='ri'><div class='v'>"+szWr+"</div><div class='l'>错误次数</div></div>";
+document.getElementById("modal").classList.add("sh");
+document.getElementById("sch-set").style.display="block";document.getElementById("sch-game").style.display="none";
+}
+document.addEventListener("keydown",e=>{
+if(curTab==="stroop"&&SR){const n=+e.key;if(n>=1&&n<=9)document.querySelectorAll(".sb2").forEach(b=>{if(+b.textContent===n)b.click();});if(e.key==="Escape")finishSt();}
+if(curTab==="schulte"&&SCH){if(e.key==="h"||e.key==="H")showHint();if(e.key==="Escape")finishSch();}
+});
+function saveR(r){
+hist.unshift(r);if(hist.length>100)hist.pop();
+localStorage.setItem("at_h",JSON.stringify(hist));
+nSess++;tTime+=r.raw;localStorage.setItem("at_s",nSess);localStorage.setItem("at_t",tTime);
+updStreak();updStats();renderHist();
+}
+function renderHist(){
+const c=document.getElementById("hist-list");
+if(!hist.length){c.innerHTML="<div class='eh'><div class='ei'>📭</div><p>还没有训练记录</p><p style='font-size:.82rem;margin-top:4px'>完成训练后这里会显示记录</p></div>";return;}
+c.innerHTML=hist.map(r=>{
+const d=new Date(r.date);const ds=(d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+const bg=r.type==="stroop"?"<span class='tb stb'>Stroop</span>":"<span class='tb schb'>舒尔特</span>";
+const info=r.type==="stroop"?(r.mode==="number"?"数值":r.mode==="word"?"文字":"混合")+" · "+r.total+"题"
+:r.size+" · "+(r.ctype==="number"?"数字":r.ctype==="letter"?"字母":r.ctype==="chinese"?"中文":"颜色")+(r.rev?" · 倒序":"");
+const sc=r.acc||r.eff;
+return "<div class='hi'><div style='display:flex;align-items:center;gap:10px'>"+bg+"<div><div style='font-size:.9rem;font-weight:500'>"+info+"</div><div class='hinfo'>"+ds+"</div></div></div><div style='text-align:right'><div class='hsv'>"+sc+"%</div><div class='hst'>"+r.tt+"</div></div></div>";
+}).join("");
+}
+function clrHist(){if(!confirm("确定清除所有记录？"))return;hist.length=0;nSess=0;tTime=0;streak=0;lDate="";["at_h","at_s","at_t","at_k","at_d"].forEach(k=>localStorage.removeItem(k));updStats();renderHist();}
+function closeM(){document.getElementById("modal").classList.remove("sh");}
+function replay(){closeM();if(curReplay)curReplay();}
+document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeM();});
+</script>
+</body>
+</html>
