@@ -426,16 +426,19 @@ createTarget(arena,pos.x,pos.y);
 }
 function getOnePos(arena,aw,ah){
 const sz=aimSize,pad=8;
-let cols=1,rows=1;
-if(aimMode==="3x3"){cols=3;rows=3;}
-else if(aimMode==="4x4"){cols=4;rows=4;}
-if(cols>1){
-const cellW=(aw-pad*2)/cols,cellH=(ah-pad*2)/rows;
+let gridN=0;
+if(aimMode==="3x3")gridN=3;
+else if(aimMode==="4x4")gridN=4;
+if(gridN>0){
+const areaW=sz*gridN,areaH=sz*gridN;
+const ox=(aw-areaW)/2,oy=(ah-areaH)/2;
 let x,y,ok,tries=0;
 do{
-const ci=Math.floor(Math.random()*cols),ri=Math.floor(Math.random()*rows);
-x=pad+ci*cellW+Math.random()*(cellW-sz);
-y=pad+ri*cellH+Math.random()*(cellH-sz);
+const ci=Math.floor(Math.random()*gridN),ri=Math.floor(Math.random()*gridN);
+x=ox+ci*sz+Math.random()*(sz-sz*.3);
+y=oy+ri*sz+Math.random()*(sz-sz*.3);
+if(x<pad)x=pad;if(y<pad)y=pad;
+if(x+sz>aw-pad)x=aw-pad-sz;if(y+sz>ah-pad)y=ah-pad-sz;
 ok=!overlaps(arena,x,y,sz);
 tries++;
 }while(!ok&&tries<30);
