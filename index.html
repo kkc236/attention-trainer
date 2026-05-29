@@ -76,6 +76,21 @@ body::before{content:"";position:fixed;top:-50%;left:-50%;width:200%;height:200%
 .szbtn{padding:6px 16px;border:2px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tm);font-weight:600;cursor:pointer;transition:all .2s}
 .szbtn:hover{border-color:var(--pri)}
 .szbtn.on{border-color:var(--pri);background:rgba(99,102,241,.15);color:var(--priL)}
+.aplay{display:flex;gap:20px;min-height:420px;align-items:stretch}
+.aside{width:160px;flex-shrink:0;display:flex;flex-direction:column;justify-content:space-between;padding:10px 0}
+.ainfo{display:flex;flex-direction:column;gap:10px;margin:10px 0}
+.astat{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px;text-align:center}
+.astat-v{display:block;font-size:1.5rem;font-weight:700;color:var(--priL)}
+.astat-l{display:block;font-size:.72rem;color:var(--tm);margin-top:2px}
+.amain{flex:1;display:flex;align-items:center;justify-content:center;min-width:0}
+.aarena{width:100%;height:400px;background:var(--bg);border:2px solid var(--bd);border-radius:16px;position:relative;cursor:crosshair;overflow:hidden}
+.aim-target{position:absolute;border-radius:50%;cursor:pointer;transition:transform .1s;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.aim-target:hover{transform:scale(1.1)}
+.aim-target.hit{animation:aimHit .3s ease forwards}
+@keyframes aimHit{0%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.5}100%{transform:scale(0);opacity:0}}
+.aim-ring{position:absolute;border-radius:50%;border:3px solid rgba(255,255,255,.6);pointer-events:none}
+.aim-score{position:absolute;font-size:1.2rem;font-weight:700;color:var(--ok);pointer-events:none;animation:aimFloat .6s ease forwards}
+@keyframes aimFloat{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-40px);opacity:0}}
 .mo{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center}
 .mo.sh{display:flex;animation:fi .3s ease}
 .md{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:30px;max-width:390px;width:90%;text-align:center}
@@ -117,6 +132,7 @@ kbd{background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:1p
 <div class="tabs">
 <button class="tbtn on" data-t="stroop" onclick="swTab('stroop')">🎨 Stroop 干扰</button>
 <button class="tbtn" data-t="schulte" onclick="swTab('schulte')">📊 舒尔特方格</button>
+<button class="tbtn" data-t="aim" onclick="swTab('aim')">🎯 反应射击</button>
 <button class="tbtn" data-t="hist" onclick="swTab('hist')">📈 训练记录</button>
 </div>
 <div class="main">
@@ -170,6 +186,31 @@ kbd{background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:1p
 </div>
 <div class="smain" style="justify-content:center">
 <div class="sg" id="sch-grid"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="pnl" id="p-aim">
+<div class="cd" id="aim-set">
+<h3>⚙️ 训练设置</h3>
+<div class="sr"><span class="slb">目标数量</span><div class="sc"><select id="aimCnt"><option value="10">10 个</option><option value="20" selected>20 个</option><option value="30">30 个</option><option value="50">50 个</option></select></div></div>
+<div class="sr"><span class="slb">目标大小</span><div class="sc"><select id="aimSize"><option value="60">大 (60px)</option><option value="45" selected>中 (45px)</option><option value="30">小 (30px)</option></select></div></div>
+<div class="sr"><span class="slb">目标样式</span><div class="sc"><select id="aimStyle"><option value="circle" selected>圆形靶</option><option value="square">方块</option><option value="star">星形</option></select></div></div>
+<div class="bg"><button class="btn bp bf" onclick="goAim()">🚀 开始训练</button></div>
+</div>
+<div class="cd" id="aim-game" style="display:none">
+<div class="aplay">
+<div class="aside">
+<div class="sside-timer"><div class="tt" id="aim-timer">00:00.0</div><div class="ts r" id="aim-ts">准备中</div></div>
+<div class="ainfo">
+<div class="astat"><span class="astat-v" id="aim-hit">0</span><span class="astat-l">命中</span></div>
+<div class="astat"><span class="astat-v" id="aim-miss">0</span><span class="astat-l">失误</span></div>
+<div class="astat"><span class="astat-v" id="aim-avg">-</span><span class="astat-l">平均反应</span></div>
+</div>
+<div class="kh"><span class="khi"><kbd>Esc</kbd> 结束</span></div>
+</div>
+<div class="amain">
+<div class="aarena" id="aim-arena"></div>
 </div>
 </div>
 </div>
@@ -338,7 +379,97 @@ document.getElementById("sch-set").style.display="block";document.getElementById
 document.addEventListener("keydown",e=>{
 if(curTab==="stroop"&&SR){const n=+e.key;if(n>=1&&n<=9)document.querySelectorAll(".sb2").forEach(b=>{if(+b.textContent===n)b.click();});if(e.key==="Escape")finishSt();}
 if(curTab==="schulte"&&SCH){if(e.key==="h"||e.key==="H")showHint();if(e.key==="Escape")finishSch();}
+if(curTab==="aim"&&AIM){if(e.key==="Escape")finishAim();}
 });
+// Aim Lab
+let AIM=false,aimTot,aimHit,aimMiss,aimTimes,aimT0,aimTI,aimSize,aimStyle;
+function goAim(){
+aimTot=+document.getElementById("aimCnt").value;
+aimSize=+document.getElementById("aimSize").value;
+aimStyle=document.getElementById("aimStyle").value;
+aimHit=0;aimMiss=0;aimTimes=[];
+document.getElementById("aim-set").style.display="none";
+document.getElementById("aim-game").style.display="block";
+document.getElementById("aim-hit").textContent="0";
+document.getElementById("aim-miss").textContent="0";
+document.getElementById("aim-avg").textContent="-";
+curReplay=goAim;
+countdown(()=>{
+AIM=true;
+aimT0=performance.now();
+aimTI=startT("aim-timer","aim-ts");
+const arena=document.getElementById("aim-arena");
+arena.innerHTML="";
+arena.onclick=function(e){if(e.target===arena){aimMiss++;document.getElementById("aim-miss").textContent=aimMiss;}};
+spawnTarget();
+});
+}
+function spawnTarget(){
+if(!AIM)return;
+if(aimHit>=aimTot){finishAim();return;}
+const arena=document.getElementById("aim-arena");
+const t=document.createElement("div");
+t.className="aim-target";
+const sz=aimSize;
+const x=Math.random()*(arena.offsetWidth-sz);
+const y=Math.random()*(arena.offsetHeight-sz);
+t.style.left=x+"px";
+t.style.top=y+"px";
+t.style.width=sz+"px";
+t.style.height=sz+"px";
+if(aimStyle==="circle"){
+t.style.borderRadius="50%";
+t.style.background="radial-gradient(circle at 35% 35%,#ff6b6b,#e74c3c,#c0392b)";
+t.style.boxShadow="0 0 20px rgba(231,76,60,.6),inset 0 -3px 6px rgba(0,0,0,.2)";
+}else if(aimStyle==="square"){
+t.style.borderRadius="8px";
+t.style.background="linear-gradient(135deg,#6366f1,#4f46e5)";
+t.style.boxShadow="0 0 20px rgba(99,102,241,.6)";
+}else{
+t.style.borderRadius="50%";
+t.style.background="conic-gradient(from 0deg,#f59e0b,#eab308,#22c55e,#3b82f6,#a855f7,#ec4899,#f59e0b)";
+t.style.boxShadow="0 0 20px rgba(245,158,11,.5)";
+const inner=document.createElement("div");
+inner.style.cssText="width:60%;height:60%;border-radius:50%;background:var(--bg);position:absolute;top:20%;left:20%";
+t.appendChild(inner);
+}
+const spawnTime=performance.now();
+t.onclick=function(e){
+e.stopPropagation();
+if(!AIM)return;
+const rt=Math.round(performance.now()-spawnTime);
+aimTimes.push(rt);
+aimHit++;
+document.getElementById("aim-hit").textContent=aimHit;
+const avg=Math.round(aimTimes.reduce((a,b)=>a+b,0)/aimTimes.length);
+document.getElementById("aim-avg").textContent=avg+"ms";
+t.classList.add("hit");
+const scoreEl=document.createElement("div");
+scoreEl.className="aim-score";
+scoreEl.textContent="+"+rt+"ms";
+scoreEl.style.left=t.style.left;
+scoreEl.style.top=t.style.top;
+arena.appendChild(scoreEl);
+setTimeout(()=>{t.remove();scoreEl.remove();spawnTarget();},250);
+};
+arena.appendChild(t);
+}
+function finishAim(){
+AIM=false;clearInterval(aimTI);
+const elapsed=performance.now()-aimT0;
+const avg=aimTimes.length?Math.round(aimTimes.reduce((a,b)=>a+b,0)/aimTimes.length):0;
+const acc=Math.round(aimHit/aimTot*100);
+saveR({type:"aim",date:new Date().toISOString(),total:aimTot,hit:aimHit,miss:aimMiss,acc:acc,avg:avg+"ms",tt:fmt(elapsed),raw:elapsed});
+const stars=avg<=300&&acc>=95?"⭐⭐⭐":avg<=500&&acc>=85?"⭐⭐":"⭐";
+const emoji=avg<=300&&acc>=95?"🏆":avg<=500&&acc>=85?"🎉":"💪";
+const title=avg<=300&&acc>=95?"神枪手！":avg<=500&&acc>=85?"训练完成！":"继续加油！";
+document.getElementById("m-emoji").textContent=emoji;
+document.getElementById("m-title").textContent=title;
+document.getElementById("m-stars").textContent=stars;
+document.getElementById("m-stats").innerHTML="<div class='ri'><div class='v'>"+acc+"%</div><div class='l'>命中率</div></div><div class='ri'><div class='v'>"+aimHit+"/"+aimTot+"</div><div class='l'>命中数</div></div><div class='ri'><div class='v'>"+avg+"ms</div><div class='l'>平均反应</div></div><div class='ri'><div class='v'>"+fmt(elapsed)+"</div><div class='l'>总用时</div></div>";
+document.getElementById("modal").classList.add("sh");
+document.getElementById("aim-set").style.display="block";document.getElementById("aim-game").style.display="none";
+}
 function saveR(r){
 hist.unshift(r);if(hist.length>100)hist.pop();
 localStorage.setItem("at_h",JSON.stringify(hist));
@@ -350,9 +481,11 @@ const c=document.getElementById("hist-list");
 if(!hist.length){c.innerHTML="<div class='eh'><div class='ei'>📭</div><p>还没有训练记录</p><p style='font-size:.82rem;margin-top:4px'>完成训练后这里会显示记录</p></div>";return;}
 c.innerHTML=hist.map(r=>{
 const d=new Date(r.date);const ds=(d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
-const bg=r.type==="stroop"?"<span class='tb stb'>Stroop</span>":"<span class='tb schb'>舒尔特</span>";
-const info=r.type==="stroop"?(r.mode==="number"?"数值":r.mode==="word"?"文字":"混合")+" · "+r.total+"题"
-:r.size+" · "+(r.ctype==="number"?"数字":r.ctype==="letter"?"字母":r.ctype==="chinese"?"中文":"颜色")+(r.rev?" · 倒序":"");
+const bg=r.type==="stroop"?"<span class='tb stb'>Stroop</span>":r.type==="schulte"?"<span class='tb schb'>舒尔特</span>":"<span class='tb' style='background:rgba(245,158,11,.15);color:#f59e0b'>反应射击</span>";
+let info;
+if(r.type==="stroop") info=(r.mode==="number"?"数值":r.mode==="word"?"文字":"混合")+" · "+r.total+"题";
+else if(r.type==="schulte") info=r.size+" · "+(r.ctype==="number"?"数字":r.ctype==="letter"?"字母":r.ctype==="chinese"?"中文":"颜色")+(r.rev?" · 倒序":"");
+else info=r.total+"目标 · 命中"+r.hit;
 const sc=r.acc||r.eff;
 return "<div class='hi'><div style='display:flex;align-items:center;gap:10px'>"+bg+"<div><div style='font-size:.9rem;font-weight:500'>"+info+"</div><div class='hinfo'>"+ds+"</div></div></div><div style='text-align:right'><div class='hsv'>"+sc+"%</div><div class='hst'>"+r.tt+"</div></div></div>";
 }).join("");
