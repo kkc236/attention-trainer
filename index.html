@@ -197,8 +197,8 @@ kbd{background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:1p
 <div class="pnl" id="p-aim">
 <div class="cd" id="aim-set">
 <h3>⚙️ 训练设置</h3>
-<div class="sr"><span class="slb">发射模式</span><div class="sc"><select id="aimMode"><option value="1" selected>单球模式（逐个击破）</option><option value="2">双球模式（同时2个）</option><option value="3x3">九宫格（3×3阵列）</option><option value="4x4">十六宫格（4×4阵列）</option><option value="rand">随机爆发（1~5个）</option></select></div></div>
-<div class="sr"><span class="slb">目标轮次</span><div class="sc"><select id="aimCnt"><option value="5">5 轮</option><option value="10" selected>10 轮</option><option value="15">15 轮</option><option value="20">20 轮</option></select></div></div>
+<div class="sr"><span class="slb">发射模式</span><div class="sc"><select id="aimMode"><option value="1" selected>单球（1个）</option><option value="2">双球（2个）</option><option value="3x3">四球·3×3区域</option><option value="4x4">四球·4×4区域</option><option value="rand">四球·随机</option></select></div></div>
+<div class="sr"><span class="slb">击中目标数</span><div class="sc"><select id="aimCnt"><option value="10" selected>10 个</option><option value="20">20 个</option><option value="30">30 个</option><option value="50">50 个</option></select></div></div>
 <div class="sr"><span class="slb">目标大小</span><div class="sc"><select id="aimSize"><option value="56">大</option><option value="42" selected>中</option><option value="28">小</option></select></div></div>
 <div class="sr"><span class="slb">目标样式</span><div class="sc"><select id="aimStyle"><option value="circle" selected>圆形靶</option><option value="square">方块</option><option value="star">星形</option></select></div></div>
 <div class="bg"><button class="btn bp bf" onclick="goAim()">🚀 开始训练</button></div>
@@ -387,13 +387,13 @@ if(curTab==="schulte"&&SCH){if(e.key==="h"||e.key==="H")showHint();if(e.key==="E
 if(curTab==="aim"&&AIM){if(e.key==="Escape")finishAim();}
 });
 // Aim Lab
-let AIM=false,aimMode,aimRounds,aimHit,aimMiss,aimTimes,aimT0,aimTI,aimSize,aimStyle,aimCurRound;
+let AIM=false,aimMode,aimTotal,aimHit,aimMiss,aimTimes,aimT0,aimTI,aimSize,aimStyle,aimSpawned;
 function goAim(){
 aimMode=document.getElementById("aimMode").value;
-aimRounds=+document.getElementById("aimCnt").value;
+aimTotal=+document.getElementById("aimCnt").value;
 aimSize=+document.getElementById("aimSize").value;
 aimStyle=document.getElementById("aimStyle").value;
-aimHit=0;aimMiss=0;aimTimes=[];aimCurRound=0;
+aimHit=0;aimMiss=0;aimTimes=[];aimSpawned=0;
 document.getElementById("aim-set").style.display="none";
 document.getElementById("aim-game").style.display="block";
 document.getElementById("aim-hit").textContent="0";
@@ -407,59 +407,58 @@ aimTI=startT("aim-timer","aim-ts");
 const arena=document.getElementById("aim-arena");
 arena.innerHTML="";
 arena.onclick=function(e){if(e.target===arena){aimMiss++;document.getElementById("aim-miss").textContent=aimMiss;}};
-spawnWave();
+const count=getFieldCount();
+for(let i=0;i<count;i++)spawnOne();
 });
 }
-function getWaveSize(){
+function getFieldCount(){
 if(aimMode==="1")return 1;
 if(aimMode==="2")return 2;
-if(aimMode==="3x3")return 9;
-if(aimMode==="4x4")return 16;
-return Math.floor(Math.random()*5)+1;
+return 4;
 }
-function spawnWave(){
-if(!AIM)return;
-if(aimCurRound>=aimRounds){finishAim();return;}
-aimCurRound++;
-const count=getWaveSize();
+function spawnOne(){
+if(!AIM||aimSpawned>=aimTotal)return;
+aimSpawned++;
 const arena=document.getElementById("aim-arena");
-const aw=arena.offsetWidth, ah=arena.offsetHeight;
-const positions=getPositions(count,aw,ah);
-for(let i=0;i<count;i++){
-const pos=positions[i];
+const aw=arena.offsetWidth,ah=arena.offsetHeight;
+const pos=getOnePos(arena,aw,ah);
 createTarget(arena,pos.x,pos.y);
 }
-}
-function getPositions(count,aw,ah){
-const sz=aimSize;
-const pad=8;
-const positions=[];
-if(aimMode==="3x3"){
-const cols=3,rows=3;
+function getOnePos(arena,aw,ah){
+const sz=aimSize,pad=8;
+let cols=1,rows=1;
+if(aimMode==="3x3"){cols=3;rows=3;}
+else if(aimMode==="4x4"){cols=4;rows=4;}
+if(cols>1){
 const cellW=(aw-pad*2)/cols,cellH=(ah-pad*2)/rows;
-for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
-positions.push({x:pad+c*cellW+(cellW-sz)/2,y:pad+r*cellH+(cellH-sz)/2});
-}
-}else if(aimMode==="4x4"){
-const cols=4,rows=4;
-const cellW=(aw-pad*2)/cols,cellH=(ah-pad*2)/rows;
-for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
-positions.push({x:pad+c*cellW+(cellW-sz)/2,y:pad+r*cellH+(cellH-sz)/2});
-}
+let x,y,ok,tries=0;
+do{
+const ci=Math.floor(Math.random()*cols),ri=Math.floor(Math.random()*rows);
+x=pad+ci*cellW+Math.random()*(cellW-sz);
+y=pad+ri*cellH+Math.random()*(cellH-sz);
+ok=!overlaps(arena,x,y,sz);
+tries++;
+}while(!ok&&tries<30);
+return{x,y};
 }else{
-for(let i=0;i<count;i++){
 let x,y,ok,tries=0;
 do{
 x=pad+Math.random()*(aw-sz-pad*2);
 y=pad+Math.random()*(ah-sz-pad*2);
-ok=true;
-for(const p of positions){const dx=p.x-x,dy=p.y-y;if(Math.sqrt(dx*dx+dy*dy)<sz+6){ok=false;break;}}
+ok=!overlaps(arena,x,y,sz);
 tries++;
-}while(!ok&&tries<50);
-positions.push({x,y});
+}while(!ok&&tries<30);
+return{x,y};
 }
 }
-return positions;
+function overlaps(arena,x,y,sz){
+const targets=arena.querySelectorAll(".aim-target:not(.hit)");
+for(const t of targets){
+const tx=parseInt(t.style.left),ty=parseInt(t.style.top);
+const dx=tx-x,dy=ty-y;
+if(Math.sqrt(dx*dx+dy*dy)<sz+8)return true;
+}
+return false;
 }
 function createTarget(arena,x,y){
 const t=document.createElement("div");
@@ -504,9 +503,8 @@ scoreEl.style.left=x+"px";
 scoreEl.style.top=(y-5)+"px";
 arena.appendChild(scoreEl);
 setTimeout(()=>{t.remove();scoreEl.remove();},200);
-if(!arena.querySelector(".aim-target:not(.hit)")){
-setTimeout(()=>spawnWave(),80);
-}
+if(aimHit>=aimTotal){setTimeout(finishAim,300);}
+else{setTimeout(spawnOne,80);}
 };
 arena.appendChild(t);
 }
@@ -541,9 +539,9 @@ function finishAim(){
 AIM=false;clearInterval(aimTI);
 const elapsed=performance.now()-aimT0;
 const avg=aimTimes.length?Math.round(aimTimes.reduce((a,b)=>a+b,0)/aimTimes.length):0;
-const acc=Math.round(aimHit/(aimHit+aimMiss)*100);
-const modeNames={"1":"单球","2":"双球","3x3":"九宫格","4x4":"十六宫格","rand":"随机爆发"};
-saveR({type:"aim",mode:aimMode,date:new Date().toISOString(),total:aimRounds,hit:aimHit,miss:aimMiss,acc:acc,avg:avg+"ms",tt:fmt(elapsed),raw:elapsed});
+const acc=aimHit+aimMiss?Math.round(aimHit/(aimHit+aimMiss)*100):0;
+const modeNames={"1":"单球","2":"双球","3x3":"四球·3×3","4x4":"四球·4×4","rand":"四球·随机"};
+saveR({type:"aim",mode:aimMode,date:new Date().toISOString(),total:aimTotal,hit:aimHit,miss:aimMiss,acc:acc,avg:avg+"ms",tt:fmt(elapsed),raw:elapsed});
 const stars=avg<=300&&acc>=95?"⭐⭐⭐":avg<=500&&acc>=85?"⭐⭐":"⭐";
 const emoji=avg<=300&&acc>=95?"🏆":avg<=500&&acc>=85?"🎉":"💪";
 const title=avg<=300&&acc>=95?"神枪手！":avg<=500&&acc>=85?"训练完成！":"继续加油！";
