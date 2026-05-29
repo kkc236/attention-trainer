@@ -196,18 +196,27 @@ kbd{background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:1p
 </div>
 <div class="pnl" id="p-aim">
 <div class="cd" id="aim-set">
+<div style="display:flex;gap:16px;align-items:flex-start">
+<div style="flex:1">
 <h3>⚙️ 训练设置</h3>
 <div class="sr"><span class="slb">发射模式</span><div class="sc"><select id="aimMode"><option value="1" selected>单球（1个）</option><option value="2">双球（2个）</option><option value="3x3">四球·3×3区域</option><option value="4x4">四球·4×4区域</option><option value="rand">四球·随机</option></select></div></div>
-<div class="sr"><span class="slb">击中目标数</span><div class="sc"><select id="aimCnt"><option value="10" selected>10 个</option><option value="20">20 个</option><option value="30">30 个</option><option value="50">50 个</option></select></div></div>
+<div class="sr"><span class="slb">击中目标数</span><div class="sc"><select id="aimCnt"><option value="10" selected>10 个</option><option value="20">20 个</option><option value="50">50 个</option><option value="100">100 个</option><option value="150">150 个</option><option value="200">200 个</option><option value="250">250 个</option></select></div></div>
 <div class="sr"><span class="slb">目标大小</span><div class="sc"><select id="aimSize"><option value="56">大</option><option value="42" selected>中</option><option value="28">小</option></select></div></div>
 <div class="sr"><span class="slb">目标样式</span><div class="sc"><select id="aimStyle"><option value="circle" selected>圆形靶</option><option value="square">方块</option><option value="star">星形</option></select></div></div>
 <div class="bg"><button class="btn bp bf" onclick="goAim()">🚀 开始训练</button></div>
+</div>
+<div style="width:200px;flex-shrink:0">
+<h3 style="font-size:.95rem">🏆 排行榜</h3>
+<div id="aim-lb" style="max-height:340px;overflow-y:auto;margin-top:8px"></div>
+</div>
+</div>
 </div>
 <div class="cd" id="aim-game" style="display:none">
 <div class="aplay">
 <div class="aside">
 <div class="sside-timer"><div class="tt" id="aim-timer">00:00.0</div><div class="ts r" id="aim-ts">准备中</div></div>
 <div class="ainfo">
+<div class="astat" style="border-color:var(--warn)"><span class="astat-v" id="aim-score" style="color:var(--warn);font-size:1.2rem">0</span><span class="astat-l">当前得分</span></div>
 <div class="astat"><span class="astat-v" id="aim-hit">0</span><span class="astat-l">命中</span></div>
 <div class="astat"><span class="astat-v" id="aim-miss">0</span><span class="astat-l">失误</span></div>
 <div class="astat"><span class="astat-v" id="aim-avg">-</span><span class="astat-l">平均反应</span></div>
@@ -273,7 +282,7 @@ document.getElementById("xStr").textContent=streak;
 }
 function updStreak(){const t=new Date().toDateString();if(lDate!==t){const y=new Date(Date.now()-864e5).toDateString();streak=lDate===y?streak+1:1;lDate=t;localStorage.setItem("at_k",streak);localStorage.setItem("at_d",lDate);}}
 function chkStreak(){const t=new Date().toDateString(),y=new Date(Date.now()-864e5).toDateString();if(lDate!==t&&lDate!==y){streak=0;localStorage.setItem("at_k","0");}}
-updStats();chkStreak();renderHist();
+updStats();chkStreak();renderHist();renderAimLB();
 function startT(tid,sid){const t0=performance.now(),te=document.getElementById(tid),se=document.getElementById(sid);se.textContent="计时中";se.className="ts r";return setInterval(()=>{const d=performance.now()-t0;const m=Math.floor(d/6e4),s=Math.floor(d%6e4/1e3),ms=Math.floor(d%1e3/100);te.textContent=(m?String(m).padStart(2,"0")+":":"")+String(s).padStart(2,"0")+"."+ms;},50);}
 function countdown(cb){const o=document.getElementById("cdown"),n=document.getElementById("cdn-n");o.classList.add("sh");let c=3;n.textContent=c;n.style.animation="none";void n.offsetWidth;n.style.animation="";const iv=setInterval(()=>{c--;if(c>0){n.textContent=c;n.style.animation="none";void n.offsetWidth;n.style.animation="";}else{clearInterval(iv);o.classList.remove("sh");cb();}},700);}
 function genTrial(mode){
@@ -387,18 +396,49 @@ if(curTab==="schulte"&&SCH){if(e.key==="h"||e.key==="H")showHint();if(e.key==="E
 if(curTab==="aim"&&AIM){if(e.key==="Escape")finishAim();}
 });
 // Aim Lab
-let AIM=false,aimMode,aimTotal,aimHit,aimMiss,aimTimes,aimT0,aimTI,aimSize,aimStyle,aimSpawned;
+let AIM=false,aimMode,aimTotal,aimHit,aimMiss,aimTimes,aimT0,aimTI,aimSize,aimStyle,aimSpawned,aimScore;
+let aimLB=JSON.parse(localStorage.getItem("at_lb")||"[]");
+function aimCoeff(rt){
+if(rt<=100)return 2.0;
+if(rt<=200)return 1.8;
+if(rt<=300)return 1.5;
+if(rt<=400)return 1.2;
+if(rt<=500)return 1.0;
+if(rt<=700)return 0.7;
+if(rt<=1000)return 0.4;
+return 0.2;
+}
+function aimFmtScore(n){return n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e3?(n/1e3).toFixed(1)+"K":String(n);}
+function renderAimLB(){
+const el=document.getElementById("aim-lb");
+if(!aimLB.length){el.innerHTML="<div style='text-align:center;color:var(--tm);padding:20px;font-size:.78rem'>暂无记录</div>";return;}
+el.innerHTML=aimLB.slice(0,15).map((r,i)=>{
+const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1)+".";
+const d=new Date(r.date);
+const ds=(d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+const modeN={"1":"单球","2":"双球","3x3":"3×3","4x4":"4×4","rand":"随机"}[r.mode]||r.mode;
+return "<div class='astat' style='padding:6px;text-align:left'><div style='display:flex;justify-content:space-between;align-items:center'><span>"+medal+"</span><span style='font-weight:700;color:var(--warn)'>"+aimFmtScore(r.score)+"</span></div><div style='font-size:.68rem;color:var(--tm);margin-top:2px'>"+modeN+" · "+r.hit+"/"+r.total+" · "+ds+"</div></div>";
+}).join("");
+}
+function saveAimLB(score,hit,miss,mode,total,date){
+aimLB.push({score,hit,miss,mode,total,date});
+aimLB.sort((a,b)=>b.score-a.score);
+if(aimLB.length>20)aimLB.length=20;
+localStorage.setItem("at_lb",JSON.stringify(aimLB));
+}
 function goAim(){
 aimMode=document.getElementById("aimMode").value;
 aimTotal=+document.getElementById("aimCnt").value;
 aimSize=+document.getElementById("aimSize").value;
 aimStyle=document.getElementById("aimStyle").value;
-aimHit=0;aimMiss=0;aimTimes=[];aimSpawned=0;
+aimHit=0;aimMiss=0;aimTimes=[];aimSpawned=0;aimScore=0;
 document.getElementById("aim-set").style.display="none";
 document.getElementById("aim-game").style.display="block";
 document.getElementById("aim-hit").textContent="0";
 document.getElementById("aim-miss").textContent="0";
 document.getElementById("aim-avg").textContent="-";
+document.getElementById("aim-score").textContent="0";
+renderAimLB();
 curReplay=goAim;
 countdown(()=>{
 AIM=true;
@@ -406,7 +446,7 @@ aimT0=performance.now();
 aimTI=startT("aim-timer","aim-ts");
 const arena=document.getElementById("aim-arena");
 arena.innerHTML="";
-arena.onclick=function(e){if(e.target===arena){aimMiss++;document.getElementById("aim-miss").textContent=aimMiss;}};
+arena.onclick=function(e){if(e.target===arena){aimMiss++;aimScore=Math.max(0,aimScore-5000);document.getElementById("aim-miss").textContent=aimMiss;document.getElementById("aim-score").textContent=aimFmtScore(aimScore);}};
 const count=getFieldCount();
 for(let i=0;i<count;i++)spawnOne();
 });
@@ -494,14 +534,18 @@ if(!AIM||t.classList.contains("hit"))return;
 const rt=Math.round(performance.now()-spawnTime);
 aimTimes.push(rt);
 aimHit++;
+const coeff=aimCoeff(rt);
+const pts=Math.round(10000*coeff);
+aimScore+=pts;
 document.getElementById("aim-hit").textContent=aimHit;
 const avg=Math.round(aimTimes.reduce((a,b)=>a+b,0)/aimTimes.length);
 document.getElementById("aim-avg").textContent=avg+"ms";
+document.getElementById("aim-score").textContent=aimFmtScore(aimScore);
 t.classList.add("hit");
 spawnBoom(arena,x+sz/2,y+sz/2,sz);
 const scoreEl=document.createElement("div");
 scoreEl.className="aim-score";
-scoreEl.textContent="+"+rt+"ms";
+scoreEl.textContent="+"+aimFmtScore(pts)+" ("+coeff.toFixed(1)+"×)";
 scoreEl.style.left=x+"px";
 scoreEl.style.top=(y-5)+"px";
 arena.appendChild(scoreEl);
@@ -543,15 +587,18 @@ AIM=false;clearInterval(aimTI);
 const elapsed=performance.now()-aimT0;
 const avg=aimTimes.length?Math.round(aimTimes.reduce((a,b)=>a+b,0)/aimTimes.length):0;
 const acc=aimHit+aimMiss?Math.round(aimHit/(aimHit+aimMiss)*100):0;
-const modeNames={"1":"单球","2":"双球","3x3":"四球·3×3","4x4":"四球·4×4","rand":"四球·随机"};
-saveR({type:"aim",mode:aimMode,date:new Date().toISOString(),total:aimTotal,hit:aimHit,miss:aimMiss,acc:acc,avg:avg+"ms",tt:fmt(elapsed),raw:elapsed});
-const stars=avg<=300&&acc>=95?"⭐⭐⭐":avg<=500&&acc>=85?"⭐⭐":"⭐";
-const emoji=avg<=300&&acc>=95?"🏆":avg<=500&&acc>=85?"🎉":"💪";
-const title=avg<=300&&acc>=95?"神枪手！":avg<=500&&acc>=85?"训练完成！":"继续加油！";
+const now=new Date().toISOString();
+saveR({type:"aim",mode:aimMode,date:now,total:aimTotal,hit:aimHit,miss:aimMiss,acc:acc,avg:avg+"ms",tt:fmt(elapsed),raw:elapsed,score:aimScore});
+saveAimLB(aimScore,aimHit,aimMiss,aimMode,aimTotal,now);
+renderAimLB();
+const rank=aimLB.findIndex(r=>r.date===now)+1;
+const stars=aimScore>=1e6?"⭐⭐⭐":aimScore>=5e5?"⭐⭐":"⭐";
+const emoji=aimScore>=1e6?"🏆":aimScore>=5e5?"🎉":"💪";
+const title=aimScore>=1e6?"神枪手！":aimScore>=5e5?"训练完成！":"继续加油！";
 document.getElementById("m-emoji").textContent=emoji;
 document.getElementById("m-title").textContent=title;
 document.getElementById("m-stars").textContent=stars;
-document.getElementById("m-stats").innerHTML="<div class='ri'><div class='v'>"+acc+"%</div><div class='l'>命中率</div></div><div class='ri'><div class='v'>"+aimHit+"/"+(aimHit+aimMiss)+"</div><div class='l'>命中/总点击</div></div><div class='ri'><div class='v'>"+avg+"ms</div><div class='l'>平均反应</div></div><div class='ri'><div class='v'>"+fmt(elapsed)+"</div><div class='l'>总用时</div></div>";
+document.getElementById("m-stats").innerHTML="<div class='ri'><div class='v' style='color:var(--warn)'>"+aimFmtScore(aimScore)+"</div><div class='l'>总得分</div></div><div class='ri'><div class='v'>"+acc+"%</div><div class='l'>命中率 "+aimHit+"/"+(aimHit+aimMiss)+"</div></div><div class='ri'><div class='v'>"+avg+"ms</div><div class='l'>平均反应</div></div><div class='ri'><div class='v'>"+(rank>0?"#"+rank:"-")+"</div><div class='l'>排行榜排名</div></div>";
 document.getElementById("modal").classList.add("sh");
 document.getElementById("aim-set").style.display="block";document.getElementById("aim-game").style.display="none";
 }
