@@ -61,17 +61,17 @@ body::before{content:"";position:fixed;top:-50%;left:-50%;width:200%;height:200%
 .sb2:hover{border-color:var(--pri);background:rgba(99,102,241,.1);transform:scale(1.05)}
 .sb2.cf{border-color:var(--ok);background:rgba(34,197,94,.2)}
 .sb2.wf{border-color:var(--err);background:rgba(239,68,68,.2)}
-.sg{display:grid;gap:6px;margin:14px auto;max-width:500px}
-.sc2{display:flex;align-items:center;justify-content:center;background:var(--bg);border:2px solid var(--bd);border-radius:12px;font-size:1.5rem;font-weight:700;cursor:pointer;transition:all .15s;user-select:none;aspect-ratio:1}
+.sg{display:grid;gap:5px;width:100%;max-width:480px;aspect-ratio:1}
+.sc2{display:flex;align-items:center;justify-content:center;background:var(--bg);border:2px solid var(--bd);border-radius:10px;font-size:1.4rem;font-weight:700;cursor:pointer;transition:all .15s;user-select:none;aspect-ratio:1}
 .sc2:hover{border-color:var(--pri);background:rgba(99,102,241,.05)}
 .sc2.fd{border-color:var(--ok);background:rgba(34,197,94,.12);color:var(--ok);cursor:default;transform:scale(.92);opacity:.6}
 .sc2.wf2{border-color:var(--err);background:rgba(239,68,68,.15);animation:sk .4s ease}
 .sc2.hc{border-color:var(--warn);box-shadow:0 0 16px rgba(245,158,11,.3)}
 @keyframes sk{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-.stgt{text-align:center;padding:12px;background:var(--bg);border-radius:12px;border:2px solid var(--bd);margin-bottom:10px}
-.stgl{color:var(--tm);font-size:.82rem}
-.stgn{font-size:2.6rem;font-weight:800;color:var(--priL)}
-.stgh{color:var(--tm);font-size:.78rem;margin-top:2px}
+.stgt{text-align:center;padding:10px;background:var(--bg);border-radius:12px;border:2px solid var(--bd);margin:8px 0}
+.stgl{color:var(--tm);font-size:.78rem}
+.stgn{font-size:2.2rem;font-weight:800;color:var(--priL)}
+.stgh{color:var(--tm);font-size:.72rem;margin-top:2px}
 .szsel{display:flex;gap:6px;flex-wrap:wrap}
 .szbtn{padding:6px 16px;border:2px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tm);font-weight:600;cursor:pointer;transition:all .2s}
 .szbtn:hover{border-color:var(--pri)}
@@ -103,7 +103,7 @@ body::before{content:"";position:fixed;top:-50%;left:-50%;width:200%;height:200%
 .kh{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px}
 .khi{display:flex;align-items:center;gap:4px;font-size:.76rem;color:var(--tm)}
 kbd{background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:1px 6px;font-family:inherit;font-size:.76rem}
-@media(max-width:700px){.hdr h1{font-size:1.6rem}.splay{flex-direction:column;min-height:auto}.sside{width:100%;flex-direction:row;align-items:center;gap:12px;padding:0;margin-bottom:10px}.sside-timer{display:flex;align-items:center;gap:8px}.ss{font-size:3rem}.sbs{max-width:340px}.sb2{padding:14px 10px;font-size:1.2rem;min-height:56px}.sc2{font-size:1.1rem}.bg{flex-direction:column}}
+@media(max-width:700px){.hdr h1{font-size:1.6rem}.splay{flex-direction:column;min-height:auto}.sside{width:100%;flex-direction:row;align-items:center;gap:12px;padding:0;margin-bottom:10px}.sside-timer{display:flex;align-items:center;gap:8px}.stgt{margin:0}.ss{font-size:3rem}.sbs{max-width:340px}.sb2{padding:14px 10px;font-size:1.2rem;min-height:56px}.sg{max-width:320px}.sc2{font-size:1rem}.bg{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -158,14 +158,20 @@ kbd{background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:1p
 <div class="bg"><button class="btn bp bf" onclick="goSchulte()">🚀 开始训练</button></div>
 </div>
 <div class="cd" id="sch-game" style="display:none">
-<div class="td"><div class="tt" id="sch-timer">00:00.0</div><div class="ts r" id="sch-ts">计时中</div></div>
+<div class="splay">
+<div class="sside">
+<div class="sside-timer"><div class="tt" id="sch-timer">00:00.0</div><div class="ts r" id="sch-ts">计时中</div></div>
 <div class="stgt">
 <div class="stgl">请找到并点击</div>
 <div class="stgn" id="sch-tgt">1</div>
 <div class="stgh" id="sch-nh"></div>
 </div>
-<div class="sg" id="sch-grid"></div>
 <div class="kh"><span class="khi"><kbd>H</kbd> 提示</span><span class="khi"><kbd>Esc</kbd> 结束</span></div>
+</div>
+<div class="smain" style="justify-content:center">
+<div class="sg" id="sch-grid"></div>
+</div>
+</div>
 </div>
 </div>
 <div class="pnl" id="p-hist">
