@@ -427,6 +427,7 @@ if(aimLB.length>20)aimLB.length=20;
 localStorage.setItem("at_lb",JSON.stringify(aimLB));
 }
 function goAim(){
+try{
 aimMode=document.getElementById("aimMode").value;
 aimTotal=+document.getElementById("aimCnt").value;
 aimSize=+document.getElementById("aimSize").value;
@@ -438,9 +439,9 @@ document.getElementById("aim-hit").textContent="0";
 document.getElementById("aim-miss").textContent="0";
 document.getElementById("aim-avg").textContent="-";
 document.getElementById("aim-score").textContent="0";
-renderAimLB();
 curReplay=goAim;
 countdown(()=>{
+try{
 AIM=true;
 aimT0=performance.now();
 aimTI=startT("aim-timer","aim-ts");
@@ -449,7 +450,9 @@ arena.innerHTML="";
 arena.onclick=function(e){if(e.target===arena){aimMiss++;aimScore=Math.max(0,aimScore-5000);document.getElementById("aim-miss").textContent=aimMiss;document.getElementById("aim-score").textContent=aimFmtScore(aimScore);}};
 const count=getFieldCount();
 for(let i=0;i<count;i++)spawnOne();
+}catch(e2){console.error("aim countdown err:",e2);alert("Aim error: "+e2.message);}
 });
+}catch(e1){console.error("aim goAim err:",e1);alert("Aim error: "+e1.message);}
 }
 function getFieldCount(){
 if(aimMode==="1")return 1;
