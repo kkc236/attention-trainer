@@ -282,7 +282,7 @@ document.getElementById("xStr").textContent=streak;
 }
 function updStreak(){const t=new Date().toDateString();if(lDate!==t){const y=new Date(Date.now()-864e5).toDateString();streak=lDate===y?streak+1:1;lDate=t;localStorage.setItem("at_k",streak);localStorage.setItem("at_d",lDate);}}
 function chkStreak(){const t=new Date().toDateString(),y=new Date(Date.now()-864e5).toDateString();if(lDate!==t&&lDate!==y){streak=0;localStorage.setItem("at_k","0");}}
-updStats();chkStreak();renderHist();renderAimLB();
+updStats();chkStreak();renderHist();try{renderAimLB();}catch(e){}
 function startT(tid,sid){const t0=performance.now(),te=document.getElementById(tid),se=document.getElementById(sid);se.textContent="计时中";se.className="ts r";return setInterval(()=>{const d=performance.now()-t0;const m=Math.floor(d/6e4),s=Math.floor(d%6e4/1e3),ms=Math.floor(d%1e3/100);te.textContent=(m?String(m).padStart(2,"0")+":":"")+String(s).padStart(2,"0")+"."+ms;},50);}
 function countdown(cb){const o=document.getElementById("cdown"),n=document.getElementById("cdn-n");o.classList.add("sh");let c=3;n.textContent=c;n.style.animation="none";void n.offsetWidth;n.style.animation="";const iv=setInterval(()=>{c--;if(c>0){n.textContent=c;n.style.animation="none";void n.offsetWidth;n.style.animation="";}else{clearInterval(iv);o.classList.remove("sh");cb();}},700);}
 function genTrial(mode){
@@ -396,7 +396,7 @@ if(curTab==="schulte"&&SCH){if(e.key==="h"||e.key==="H")showHint();if(e.key==="E
 if(curTab==="aim"&&AIM){if(e.key==="Escape")finishAim();}
 });
 // Aim Lab
-let AIM=false,aimMode,aimTotal,aimHit,aimMiss,aimTimes,aimT0,aimTI,aimSize,aimStyle,aimSpawned,aimScore;
+let AIM=false,aimMode="1",aimTotal=10,aimHit=0,aimMiss=0,aimTimes=[],aimT0=0,aimTI=null,aimSize=42,aimStyle="circle",aimSpawned=0,aimScore=0;
 let aimLB=JSON.parse(localStorage.getItem("at_lb")||"[]");
 function aimCoeff(rt){
 if(rt<=100)return 2.0;
